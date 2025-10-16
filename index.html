@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTW Jeopardy - Control Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .grid-config {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        textarea {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.6);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.85em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .board-setup {
+            display: grid;
+            gap: 15px;
+        }
+
+        .category-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .question-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .question-row {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .question-columns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .question-cell {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .question-cell h4 {
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: #f39c12;
+        }
+
+        .teams-section {
+            display: grid;
+            gap: 15px;
+        }
+
+        .team-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .team-input input {
+            flex: 1;
+        }
+
+        .team-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .team-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .team-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex: 1;
+        }
+
+        .team-name {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .team-score {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #f39c12;
+        }
+
+        .team-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .current-question {
+            background: rgba(243, 156, 18, 0.2);
+            border: 2px solid #f39c12;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .current-question h3 {
+            color: #f39c12;
+            margin-bottom: 10px;
+        }
+
+        .current-question p {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .current-question strong {
+            color: #f39c12;
+        }
+
+        #setupView, #gameView {
+            display: none;
+        }
+
+        #setupView.active, #gameView.active {
+            display: block;
+        }
+
+        .status-bar {
+            background: rgba(39, 174, 96, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .file-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 HTW Jeopardy - Control Panel</h1>
+
+        <!-- Setup View -->
+        <div id="setupView" class="active">
+            <!-- Grid Configuration -->
+            <div class="section">
+                <h2>📐 Grid Configuration</h2>
+                <div class="grid-config">
+                    <div class="input-group">
+                        <label>Number of Categories (Columns):</label>
+                        <input type="number" id="numColumns" value="6" min="1" max="12">
+                    </div>
+                    <div class="input-group">
+                        <label>Number of Questions per Category (Rows):</label>
+                        <input type="number" id="numRows" value="5" min="1" max="10">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="generateBoard()">Generate Board</button>
+                    <button class="btn-secondary" onclick="saveSetup()">💾 Save Setup</button>
+                    <button class="btn-secondary" onclick="document.getElementById('fileInput').click()">📂 Load Setup</button>
+                    <input type="file" id="fileInput" accept=".json" onchange="loadSetup(event)">
+                </div>
+            </div>
+
+            <!-- Board Setup -->
+            <div class="section" id="boardSection" style="display: none;">
+                <h2>📋 Board Setup</h2>
+                <div id="boardSetup"></div>
+            </div>
+
+            <!-- Team Setup -->
+            <div class="section">
+                <h2>👥 Team Setup</h2>
+                <div class="teams-section">
+                    <div class="team-input">
+                        <input type="text" id="teamNameInput" placeholder="Enter team name">
+                        <button class="btn-primary" onclick="addTeam()">Add Team</button>
+                        <button class="btn-secondary" onclick="resetTeamScores()">Reset All Scores</button>
+                    </div>
+                    <div class="team-list" id="teamList"></div>
+                </div>
+            </div>
+
+            <!-- Start Game -->
+            <div class="section">
+                <h2>🎮 Start Game</h2>
+                <div class="game-controls">
+                    <button class="btn-success" onclick="startGame()" style="font-size: 1.2em; padding: 15px 30px;">
+                        ▶️ START GAME
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game View -->
+        <div id="gameView">
+            <div class="status-bar">
+                🎮 Game in Progress - Display window should be open on secondary screen
+            </div>
+
+            <!-- Current Question Display -->
+            <div class="section">
+                <h2>📺 Current Question Display</h2>
+                <div id="currentQuestionDisplay">
+                    <p style="text-align: center; opacity: 0.7;">No question selected yet</p>
+                </div>
+            </div>
+
+            <!-- Team Scores & Controls -->
+            <div class="section">
+                <h2>🏆 Team Scores</h2>
+                <div class="team-list" id="gameTeamList"></div>
+            </div>
+
+            <!-- Game Controls -->
+            <div class="section">
+                <h2>⚙️ Game Controls</h2>
+                <div class="game-controls">
+                    <button class="btn-secondary" onclick="resetCurrentQuestion()">Clear Current Question</button>
+                    <button class="btn-primary" onclick="resetGame()">🔄 Reset Game (Keep Setup)</button>
+                    <button class="btn-danger" onclick="endGame()">End Game & Return to Setup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            columns: 6,
+            rows: 5,
+            categories: [],
+            questions: [],
+            teams: [],
+            currentQuestion: null,
+            usedQuestions: new Set(),
+            gameActive: false
+        };
+
+        let displayWindow = null;
+        const CHANNEL_NAME = 'jeopardy-game';
+        let broadcastChannel = null;
+
+        // Initialize
+        window.addEventListener('load', () => {
+            loadFromLocalStorage();
+            updateTeamList();
+            
+            // Listen for storage events from display window
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'jeopardy-current-question') {
+                    handleQuestionSelected(JSON.parse(e.newValue));
+                }
+            });
+
+            // Also use BroadcastChannel for better real-time sync
+            if ('BroadcastChannel' in window) {
+                broadcastChannel = new BroadcastChannel(CHANNEL_NAME);
+                broadcastChannel.onmessage = (event) => {
+                    if (event.data.type === 'questionSelected') {
+                        handleQuestionSelected(event.data.data);
+                    }
+                };
+            }
+        });
+
+        function generateBoard() {
+            const cols = parseInt(document.getElementById('numColumns').value);
+            const rows = parseInt(document.getElementById('numRows').value);
+
+            gameState.columns = cols;
+            gameState.rows = rows;
+            gameState.categories = new Array(cols).fill('').map((_, i) => gameState.categories[i] || '');
+            gameState.questions = [];
+
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const existing = gameState.questions.find(q => q.row === row && q.col === col);
+                    gameState.questions.push(existing || {
+                        row,
+                        col,
+                        points: (row + 1) * 100,
+                        question: '',
+                        answer: ''
+                    });
+                }
+            }
+
+            renderBoardSetup();
+            document.getElementById('boardSection').style.display = 'block';
+            saveToLocalStorage();
+        }
+
+        function renderBoardSetup() {
+            const container = document.getElementById('boardSetup');
+            container.innerHTML = '';
+
+            // Categories
+            const categoryDiv = document.createElement('div');
+            categoryDiv.innerHTML = '<h3 style="margin-bottom: 15px;">Category Names:</h3>';
+            const categoryRow = document.createElement('div');
+            categoryRow.className = 'category-row';
+            
+            for (let col = 0; col < gameState.columns; col++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `Category ${col + 1}`;
+                input.value = gameState.categories[col] || '';
+                input.onchange = (e) => {
+                    gameState.categories[col] = e.target.value;
+                    saveToLocalStorage();
+                };
+                categoryRow.appendChild(input);
+            }
+            categoryDiv.appendChild(categoryRow);
+            container.appendChild(categoryDiv);
+
+            // Questions
+            const questionsDiv = document.createElement('div');
+            questionsDiv.className = 'question-grid';
+            questionsDiv.innerHTML = '<h3 style="margin: 20px 0 15px 0;">Questions & Answers:</h3>';
+
+            for (let row = 0; row < gameState.rows; row++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'question-row';
+                rowDiv.innerHTML = `<h3 style="color: #f39c12; margin-bottom: 10px;">Row ${row + 1} - ${(row + 1) * 100} Points</h3>`;
+
+                const columnsDiv = document.createElement('div');
+                columnsDiv.className = 'question-columns';
+
+                for (let col = 0; col < gameState.columns; col++) {
+                    const question = gameState.questions.find(q => q.row === row && q.col === col);
+                    const cellDiv = document.createElement('div');
+                    cellDiv.className = 'question-cell';
+                    cellDiv.innerHTML = `
+                        <h4>${gameState.categories[col] || `Category ${col + 1}`}</h4>
+                        <div class="input-group">
+                            <label>Question:</label>
+                            <textarea id="q-${row}-${col}" placeholder="Enter question">${question.question}</textarea>
+                        </div>
+                        <div class="input-group" style="margin-top: 10px;">
+                            <label>Answer:</label>
+                            <textarea id="a-${row}-${col}" placeholder="Enter answer">${question.answer}</textarea>
+                        </div>
+                    `;
+
+                    cellDiv.querySelector(`#q-${row}-${col}`).onchange = (e) => {
+                        question.question = e.target.value;
+                        saveToLocalStorage();
+                    };
+
+                    cellDiv.querySelector(`#a-${row}-${col}`).onchange = (e) => {
+                        question.answer = e.target.value;
+                        saveToLocalStorage();
+                    };
+
+                    columnsDiv.appendChild(cellDiv);
+                }
+
+                rowDiv.appendChild(columnsDiv);
+                questionsDiv.appendChild(rowDiv);
+            }
+
+            container.appendChild(questionsDiv);
+        }
+
+        function addTeam() {
+            const input = document.getElementById('teamNameInput');
+            const name = input.value.trim();
+            
+            if (name) {
+                gameState.teams.push({ name, score: 0 });
+                input.value = '';
+                updateTeamList();
+                saveToLocalStorage();
+            }
+        }
+
+        function removeTeam(index) {
+            gameState.teams.splice(index, 1);
+            updateTeamList();
+            saveToLocalStorage();
+        }
+
+        function updateTeamList() {
+            const list = document.getElementById('teamList');
+            list.innerHTML = '';
+
+            gameState.teams.forEach((team, index) => {
+                const div = document.createElement('div');
+                div.className = 'team-item';
+                div.innerHTML = `
+                    <div class="team-info">
+                        <span class="team-name">${team.name}</span>
+                        <span class="team-score">${team.score} pts</span>
+                    </div>
+                    <button class="btn-danger btn-small" onclick="removeTeam(${index})">Remove</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function updateGameTeamList() {
+            const list = document.getElementById('gameTeamList');
+            list.innerHTML = '';
+
+            if (!gameState.currentQuestion) {
+                list.innerHTML = '<p style="text-align: center; opacity: 0.7;">Select a question to award points</p>';
+                return;
+            }
+
+            gameState.teams.forEach((team, index) => {
+                const div = document.createElement('div');
+                div.className = 'team-item';
+                div.innerHTML = `
+                    <div class="team-info">
+                        <span class="team-name">${team.name}</span>
+                        <span class="team-score">${team.score} pts</span>
+                    </div>
+                    <div class="team-controls">
+                        <button class="btn-success btn-small" onclick="awardPoints(${index}, ${gameState.currentQuestion.points})">
+                            +${gameState.currentQuestion.points}
+                        </button>
+                        <button class="btn-danger btn-small" onclick="awardPoints(${index}, -${gameState.currentQuestion.points})">
+                            -${gameState.currentQuestion.points}
+                        </button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function awardPoints(teamIndex, points) {
+            gameState.teams[teamIndex].score += points;
+            updateGameTeamList();
+            saveToLocalStorage();
+            broadcastGameState();
+        }
+
+        function startGame() {
+            if (gameState.teams.length === 0) {
+                alert('Please add at least one team before starting!');
+                return;
+            }
+
+            if (gameState.questions.length === 0) {
+                alert('Please generate the board first!');
+                return;
+            }
+
+            gameState.gameActive = true;
+            gameState.usedQuestions = new Set();
+            
+            document.getElementById('setupView').classList.remove('active');
+            document.getElementById('gameView').classList.add('active');
+
+            // Open display window
+            displayWindow = window.open('display.html', 'JeopardyDisplay', 'width=1920,height=1080');
+            
+            // Wait for display window to load, then send game state
+            setTimeout(() => {
+                broadcastGameState();
+            }, 500);
+
+            updateGameTeamList();
+            saveToLocalStorage();
+        }
+
+        function handleQuestionSelected(data) {
+            gameState.currentQuestion = data;
+            
+            // Mark this question as used
+            if (data && data.cellKey) {
+                gameState.usedQuestions.add(data.cellKey);
+            }
+            
+            displayCurrentQuestion();
+            updateGameTeamList();
+            saveToLocalStorage();
+        }
+
+        function displayCurrentQuestion() {
+            const container = document.getElementById('currentQuestionDisplay');
+            
+            if (!gameState.currentQuestion) {
+                container.innerHTML = '<p style="text-align: center; opacity: 0.7;">No question selected yet</p>';
+                return;
+            }
+
+            const q = gameState.currentQuestion;
+            const category = gameState.categories[q.col] || `Category ${q.col + 1}`;
+
+            container.innerHTML = `
+                <div class="current-question">
+                    <h3>${category} - ${q.points} Points</h3>
+                    <p><strong>Question:</strong> ${q.question || '(No question entered)'}</p>
+                    <p><strong>Answer:</strong> ${q.answer || '(No answer entered)'}</p>
+                </div>
+            `;
+        }
+
+        function resetCurrentQuestion() {
+            gameState.currentQuestion = null;
+            displayCurrentQuestion();
+            updateGameTeamList();
+        }
+
+        function resetGame() {
+            if (confirm('Are you sure you want to reset the game?\n\nThis will:\n- Reset all team scores to 0\n- Mark all questions as unused\n- Clear the current question\n\nYour board setup will be kept.')) {
+                // Reset team scores
+                gameState.teams.forEach(team => team.score = 0);
+                
+                // Reset used questions
+                gameState.usedQuestions = new Set();
+                
+                // Clear current question
+                gameState.currentQuestion = null;
+                
+                // Update displays
+                displayCurrentQuestion();
+                updateGameTeamList();
+                broadcastGameState();
+                saveToLocalStorage();
+                
+                alert('Game has been reset! All questions are available again and scores are set to 0.');
+            }
+        }
+
+        function resetTeamScores() {
+            if (confirm('Are you sure you want to reset all team scores to 0?')) {
+                gameState.teams.forEach(team => team.score = 0);
+                updateTeamList();
+                
+                // If game is active, also update game view
+                if (gameState.gameActive) {
+                    updateGameTeamList();
+                    broadcastGameState();
+                }
+                
+                saveToLocalStorage();
+            }
+        }
+
+        function broadcastGameState() {
+            const state = {
+                ...gameState,
+                usedQuestions: Array.from(gameState.usedQuestions)
+            };
+
+            localStorage.setItem('jeopardy-game-state', JSON.stringify(state));
+            
+            if (broadcastChannel) {
+                broadcastChannel.postMessage({
+                    type: 'gameStateUpdate',
+                    data: state
+                });
+            }
+
+            // Trigger storage event
+            window.dispatchEvent(new StorageEvent('storage', {
+                key: 'jeopardy-game-state',
+                newValue: JSON.stringify(state)
+            }));
+        }
+
+        function endGame() {
+            if (confirm('Are you sure you want to end the game and return to setup?')) {
+                gameState.gameActive = false;
+                gameState.currentQuestion = null;
+                gameState.usedQuestions = new Set();
+                
+                if (displayWindow && !displayWindow.closed) {
+                    displayWindow.close();
+                }
+
+                document.getElementById('gameView').classList.remove('active');
+                document.getElementById('setupView').classList.add('active');
+
+                saveToLocalStorage();
+            }
+        }
+
+        function saveToLocalStorage() {
+            const state = {
+                ...gameState,
+                usedQuestions: Array.from(gameState.usedQuestions)
+            };
+            localStorage.setItem('jeopardy-setup', JSON.stringify(state));
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('jeopardy-setup');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                gameState = {
+                    ...parsed,
+                    usedQuestions: new Set(parsed.usedQuestions || []),
+                    currentQuestion: null,
+                    gameActive: false
+                };
+
+                document.getElementById('numColumns').value = gameState.columns;
+                document.getElementById('numRows').value = gameState.rows;
+
+                if (gameState.questions.length > 0) {
+                    renderBoardSetup();
+                    document.getElementById('boardSection').style.display = 'block';
+                }
+            }
+        }
+
+        function saveSetup() {
+            // Only save board configuration, not teams or game state
+            const setupToSave = {
+                columns: gameState.columns,
+                rows: gameState.rows,
+                categories: gameState.categories,
+                questions: gameState.questions
+            };
+            const dataStr = JSON.stringify(setupToSave, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `jeopardy-setup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function loadSetup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    
+                    // Only load board configuration, keep existing teams
+                    gameState.columns = parsed.columns;
+                    gameState.rows = parsed.rows;
+                    gameState.categories = parsed.categories;
+                    gameState.questions = parsed.questions;
+                    gameState.usedQuestions = new Set();
+                    gameState.currentQuestion = null;
+                    gameState.gameActive = false;
+
+                    document.getElementById('numColumns').value = gameState.columns;
+                    document.getElementById('numRows').value = gameState.rows;
+
+                    if (gameState.questions.length > 0) {
+                        renderBoardSetup();
+                        document.getElementById('boardSection').style.display = 'block';
+                    }
+
+                    saveToLocalStorage();
+                    alert('Setup loaded successfully!\n\nNote: Your existing teams have been kept.');
+                } catch (error) {
+                    alert('Error loading file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && gameState.currentQuestion) {
+                resetCurrentQuestion();
+            }
+        });
+    </script>
+</body>
+</html>

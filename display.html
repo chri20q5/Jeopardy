@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTW Jeopardy - Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #060ce9 0%, #0a47b5 100%);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #f39c12;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+
+        .scoreboard {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .team-score {
+            background: rgba(243, 156, 18, 0.3);
+            padding: 10px 25px;
+            border-radius: 10px;
+            border: 2px solid #f39c12;
+        }
+
+        .team-score .name {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .team-score .score {
+            font-size: 2em;
+            font-weight: 700;
+            color: #f39c12;
+        }
+
+        .board-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        .board {
+            display: grid;
+            gap: 10px;
+            width: 100%;
+            max-width: 1600px;
+            height: 100%;
+            max-height: 900px;
+        }
+
+        .category {
+            background: linear-gradient(135deg, #060ce9 0%, #0942a8 100%);
+            border: 3px solid #f39c12;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .cell {
+            background: linear-gradient(135deg, #060ce9 0%, #0942a8 100%);
+            border: 3px solid #f39c12;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cell:hover:not(.used) {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.6);
+            border-color: #fff;
+        }
+
+        .cell.used {
+            background: linear-gradient(135deg, #1a1a3e 0%, #0f0f2e 100%);
+            border-color: #555;
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+
+        .cell-points {
+            font-size: 3.5em;
+            font-weight: 700;
+            color: #f39c12;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+        }
+
+        .cell.used .cell-points {
+            color: #555;
+        }
+
+        .question-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .question-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .question-content {
+            background: linear-gradient(135deg, #060ce9 0%, #0942a8 100%);
+            border: 5px solid #f39c12;
+            border-radius: 20px;
+            padding: 60px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            animation: slideIn 0.4s ease;
+            cursor: pointer;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .question-content .category-info {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2em;
+            color: #f39c12;
+            font-weight: 600;
+        }
+
+        .question-content .text {
+            font-size: 3.5em;
+            text-align: center;
+            line-height: 1.4;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .question-content .answer {
+            display: none;
+            margin-top: 50px;
+            padding-top: 50px;
+            border-top: 3px solid #f39c12;
+        }
+
+        .question-content .answer.visible {
+            display: block;
+        }
+
+        .question-content .answer-label {
+            color: #27ae60;
+            font-size: 2em;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(243, 156, 18, 0.9);
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 2em;
+            padding: 50px;
+        }
+
+        /* Confetti and feedback effects */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2000;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #f39c12;
+            animation: confetti-fall linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .negative-particle {
+            position: absolute;
+            font-size: 3em;
+            color: #e74c3c;
+            animation: negative-fall linear forwards;
+            font-weight: bold;
+        }
+
+        @keyframes negative-fall {
+            to {
+                transform: translateY(100vh) rotate(180deg);
+                opacity: 0;
+            }
+        }
+
+        .screen-shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+
+        .flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1999;
+            animation: flash 0.5s;
+        }
+
+        .flash-overlay.positive {
+            background: rgba(243, 156, 18, 0.4);
+        }
+
+        .flash-overlay.negative {
+            background: rgba(231, 76, 60, 0.4);
+        }
+
+        @keyframes flash {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="confetti-container" id="confettiContainer"></div>
+    
+    <div class="header">
+        <h1>🎯 HTW JEOPARDY</h1>
+        <div class="scoreboard" id="scoreboard"></div>
+    </div>
+
+    <div class="board-container">
+        <div class="board" id="board">
+            <div class="loading">Waiting for game to start...</div>
+        </div>
+    </div>
+
+    <div class="question-overlay" id="questionOverlay">
+        <div class="question-content" id="questionContent" onclick="showAnswer()">
+            <!-- Question content will be inserted here -->
+        </div>
+    </div>
+
+    <div class="hint" id="hint" style="display: none;">
+        Click to reveal answer
+    </div>
+
+    <script>
+        let gameState = null;
+        let currentQuestion = null;
+        let answerRevealed = false;
+        let previousScores = {};
+        const CHANNEL_NAME = 'jeopardy-game';
+        let broadcastChannel = null;
+
+        window.addEventListener('load', () => {
+            loadGameState();
+
+            // Listen for storage events
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'jeopardy-game-state') {
+                    loadGameState();
+                }
+            });
+
+            // Use BroadcastChannel for better real-time sync
+            if ('BroadcastChannel' in window) {
+                broadcastChannel = new BroadcastChannel(CHANNEL_NAME);
+                broadcastChannel.onmessage = (event) => {
+                    if (event.data.type === 'gameStateUpdate') {
+                        gameState = event.data.data;
+                        gameState.usedQuestions = new Set(gameState.usedQuestions || []);
+                        renderBoard();
+                        updateScoreboard();
+                    }
+                };
+            }
+
+            // Poll for updates every 500ms as fallback
+            setInterval(() => {
+                loadGameState();
+            }, 500);
+        });
+
+        function loadGameState() {
+            const saved = localStorage.getItem('jeopardy-game-state');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                gameState = {
+                    ...parsed,
+                    usedQuestions: new Set(parsed.usedQuestions || [])
+                };
+                renderBoard();
+                updateScoreboard();
+            }
+        }
+
+        function renderBoard() {
+            if (!gameState || gameState.questions.length === 0) return;
+
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            board.style.gridTemplateColumns = `repeat(${gameState.columns}, 1fr)`;
+            board.style.gridTemplateRows = `auto repeat(${gameState.rows}, 1fr)`;
+
+            // Render categories
+            for (let col = 0; col < gameState.columns; col++) {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                categoryDiv.textContent = gameState.categories[col] || `Category ${col + 1}`;
+                board.appendChild(categoryDiv);
+            }
+
+            // Render cells
+            for (let row = 0; row < gameState.rows; row++) {
+                for (let col = 0; col < gameState.columns; col++) {
+                    const question = gameState.questions.find(q => q.row === row && q.col === col);
+                    const cellDiv = document.createElement('div');
+                    cellDiv.className = 'cell';
+                    
+                    const cellKey = `${row}-${col}`;
+                    if (gameState.usedQuestions.has(cellKey)) {
+                        cellDiv.classList.add('used');
+                    }
+
+                    cellDiv.innerHTML = `<div class="cell-points">$${question.points}</div>`;
+                    
+                    if (!cellDiv.classList.contains('used')) {
+                        cellDiv.onclick = () => selectQuestion(question, cellKey);
+                    }
+
+                    board.appendChild(cellDiv);
+                }
+            }
+        }
+
+        function updateScoreboard() {
+            if (!gameState) return;
+
+            const scoreboard = document.getElementById('scoreboard');
+            scoreboard.innerHTML = '';
+
+            gameState.teams.forEach((team, index) => {
+                const teamDiv = document.createElement('div');
+                teamDiv.className = 'team-score';
+                teamDiv.innerHTML = `
+                    <div class="name">${team.name}</div>
+                    <div class="score">${team.score}</div>
+                `;
+                scoreboard.appendChild(teamDiv);
+
+                // Check for score changes and trigger effects
+                const teamKey = `team-${index}`;
+                if (previousScores[teamKey] !== undefined && previousScores[teamKey] !== team.score) {
+                    const scoreDiff = team.score - previousScores[teamKey];
+                    if (scoreDiff > 0) {
+                        triggerPositiveFeedback();
+                    } else if (scoreDiff < 0) {
+                        triggerNegativeFeedback();
+                    }
+                }
+                previousScores[teamKey] = team.score;
+            });
+        }
+
+        function triggerPositiveFeedback() {
+            // Flash overlay
+            const flash = document.createElement('div');
+            flash.className = 'flash-overlay positive';
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 1000);
+
+            // Confetti
+            createConfetti();
+            
+            // Play positive sound
+            playPositiveSound();
+        }
+
+        function triggerNegativeFeedback() {
+            // Flash overlay
+            const flash = document.createElement('div');
+            flash.className = 'flash-overlay negative';
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 1000);
+
+            // Screen shake
+            document.body.classList.add('screen-shake');
+            setTimeout(() => document.body.classList.remove('screen-shake'), 1000);
+
+            // Negative particles
+            createNegativeParticles();
+            
+            // Play negative sound
+            playNegativeSound();
+        }
+
+        function createConfetti() {
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#f39c12', '#e67e22', '#f1c40f', '#d4af37', '#ffd700'];
+            const confettiCount = 100;
+
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = -10 + 'px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = (Math.random() * 10 + 5) + 'px';
+                confetti.style.height = (Math.random() * 10 + 5) + 'px';
+                confetti.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                confetti.style.animationDelay = (Math.random() * 1) + 's';
+                confetti.style.opacity = Math.random() * 0.5 + 0.5;
+                
+                // Random shapes
+                if (Math.random() > 0.5) {
+                    confetti.style.borderRadius = '50%';
+                }
+
+                container.appendChild(confetti);
+
+                // Remove after animation
+                setTimeout(() => confetti.remove(), 8000);
+            }
+        }
+
+        function createNegativeParticles() {
+            const container = document.getElementById('confettiContainer');
+            const symbols = ['❌', '✖', '⚠', '💥'];
+            const particleCount = 30;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'negative-particle';
+                particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = -50 + 'px';
+                particle.style.animationDuration = (Math.random() * 2.5 + 2.5) + 's';
+                particle.style.animationDelay = (Math.random() * 0.6) + 's';
+                particle.style.opacity = Math.random() * 0.5 + 0.5;
+
+                container.appendChild(particle);
+
+                // Remove after animation
+                setTimeout(() => particle.remove(), 6000);
+            }
+        }
+
+        // Sound effects using Web Audio API
+        function playPositiveSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Play a celebratory ascending tone sequence
+            const now = audioContext.currentTime;
+            const frequencies = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            
+            frequencies.forEach((freq, index) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+                
+                const startTime = now + (index * 0.1);
+                gainNode.gain.setValueAtTime(0.3, startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+                
+                oscillator.start(startTime);
+                oscillator.stop(startTime + 0.3);
+            });
+        }
+
+        function playNegativeSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Play a descending "buzzer" sound
+            const now = audioContext.currentTime;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(300, now);
+            oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.5);
+            
+            gainNode.gain.setValueAtTime(0.4, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+            
+            oscillator.start(now);
+            oscillator.stop(now + 0.5);
+        }
+
+        function selectQuestion(question, cellKey) {
+            currentQuestion = { ...question, cellKey };
+            answerRevealed = false;
+
+            const category = gameState.categories[question.col] || `Category ${question.col + 1}`;
+            
+            const content = document.getElementById('questionContent');
+            content.innerHTML = `
+                <div class="category-info">${category} - $${question.points}</div>
+                <div class="text">${question.question || '(No question entered)'}</div>
+                <div class="answer">
+                    <div class="answer-label">✓ ANSWER:</div>
+                    <div class="text">${question.answer || '(No answer entered)'}</div>
+                </div>
+            `;
+
+            document.getElementById('questionOverlay').classList.add('active');
+            document.getElementById('hint').style.display = 'block';
+
+            // Mark as used
+            gameState.usedQuestions.add(cellKey);
+            
+            // Update localStorage with the used questions
+            const stateToSave = {
+                ...gameState,
+                usedQuestions: Array.from(gameState.usedQuestions)
+            };
+            localStorage.setItem('jeopardy-game-state', JSON.stringify(stateToSave));
+            
+            renderBoard();
+
+            // Notify control panel
+            localStorage.setItem('jeopardy-current-question', JSON.stringify(currentQuestion));
+            
+            if (broadcastChannel) {
+                broadcastChannel.postMessage({
+                    type: 'questionSelected',
+                    data: currentQuestion
+                });
+                
+                // Also broadcast the updated game state
+                broadcastChannel.postMessage({
+                    type: 'gameStateUpdate',
+                    data: stateToSave
+                });
+            }
+        }
+
+        function showAnswer() {
+            if (!answerRevealed) {
+                answerRevealed = true;
+                document.querySelector('.answer').classList.add('visible');
+                document.getElementById('hint').style.display = 'none';
+            } else {
+                closeQuestion();
+            }
+        }
+
+        function closeQuestion() {
+            document.getElementById('questionOverlay').classList.remove('active');
+            document.getElementById('hint').style.display = 'none';
+            currentQuestion = null;
+            answerRevealed = false;
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeQuestion();
+            } else if (e.key === ' ' || e.key === 'Enter') {
+                if (currentQuestion) {
+                    showAnswer();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
